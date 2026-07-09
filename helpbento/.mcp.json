@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "helpbento-api": {
+      "type": "http",
+      "url": "${HELPBENTO_MCP_URL:-https://api.helpbento.com/mcp}"
+    }
+  }
+}

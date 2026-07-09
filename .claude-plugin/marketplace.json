@@ -1,0 +1,21 @@
+{
+  "name": "helpbento",
+  "owner": {
+    "name": "HelpBento",
+    "url": "https://helpbento.com"
+  },
+  "metadata": {
+    "description": "Official HelpBento marketplace for Claude Code plugins.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "helpbento",
+      "source": "./helpbento",
+      "description": "Draft HelpBento articles, developer docs, and changelog entries from your codebase — and manage knowledge bases — pushing everything as drafts (never auto-published).",
+      "version": "0.11.0",
+      "author": { "name": "HelpBento" },
+      "keywords": ["helpbento", "knowledge-base", "documentation", "changelog", "developer-docs", "support", "docs"]
+    }
+  ]
+}
