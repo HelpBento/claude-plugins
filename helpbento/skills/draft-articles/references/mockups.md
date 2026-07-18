@@ -32,6 +32,12 @@ a generic wireframe:
    - CSS-in-JS / design-system package: a `theme` object, a `tokens` export.
 2. Extract and note: brand/primary color, background, surface/card, text, muted
    text, border, the radius scale, font family, shadow style.
+   **Theme mode:** extract the values for the mode chosen at kickoff (Step 0).
+   Dark values usually live in an override block — `[data-theme="dark"]`,
+   `.dark`, `data-mode`, or `@media (prefers-color-scheme: dark)` — layered
+   over the `:root` defaults; "App default" means the plain `:root` values
+   with no override applied. Take every color from ONE mode — a light
+   background with dark-mode text (or vice versa) reads as broken.
 3. Identify the screen you're depicting from the component/route the article
    documents (you already read this code). Capture REAL labels: nav items, button
    text, field placeholders, status names.

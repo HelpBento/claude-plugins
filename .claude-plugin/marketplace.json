@@ -13,7 +13,7 @@
       "name": "helpbento",
       "source": "./helpbento",
       "description": "Draft HelpBento articles, developer docs, and changelog entries from your codebase — and manage knowledge bases — pushing everything as drafts (never auto-published).",
-      "version": "0.11.1",
+      "version": "0.12.0",
       "author": { "name": "HelpBento" },
       "keywords": ["helpbento", "knowledge-base", "documentation", "changelog", "developer-docs", "support", "docs"]
     }

@@ -20,6 +20,16 @@ allowed-tools:
   - mcp__plugin_helpbento_helpbento-api__upload_image
   - Bash(node:*)
   - Bash(git:*)
+  - Bash(base64:*)
+  - Bash(tr:*)
+  - Bash(wc:*)
+  - Bash(xmllint:*)
+  - Bash(rsvg-convert:*)
+  - Bash(cairosvg:*)
+  - Bash(qlmanage:*)
+  - Bash(mktemp:*)
+  - Write
+  - AskUserQuestion
   - Read
   - Grep
   - Glob
@@ -65,6 +75,24 @@ to run `/mcp`, choose **helpbento-api**, and complete the browser login, then re
 - `create_changelog_entry { knowledgeBaseId, title, markdown, versionNumber?, releaseDate? }` → `{ entryId, versionId, status, adminUrl }`.
 - `update_changelog_entry { entryId, markdown, title?, versionNumber?, releaseDate? }` → `{ entryId, versionId, status, adminUrl }`.
 - `upload_image { changelogEntryId, contentType, dataBase64 }` → `{ path, url }`. See **Images**.
+
+## Step 0 — Kickoff: image preferences
+
+Settle image preferences once, up front (changelog entries have no voice
+settings — no tone question here):
+
+1. **Check mockup viability** — as in `draft-articles` Step 0: generated UI
+   mockups are only reliable on **Opus 4.8-or-stronger models** (smaller
+   models skip them for the run and say so), and the theme question applies
+   only when the repo's design tokens define both a light and a dark mode.
+2. **Ask ONE `AskUserQuestion` dialog** with whichever of these the user's
+   request hasn't already answered (skip the dialog if none are open):
+   - **Images** — "Illustrate the entry with images?"
+     `Yes, where they help` (recommended — a real screenshot if one exists,
+     else a generated UI mockup subject to `draft-articles`'s faithfulness
+     gate) / `You decide` / `Text only`.
+   - **Mockup theme** (both modes exist) — `App default` / `Light` / `Dark`.
+3. Apply the answers for the whole run.
 
 ## Step 1 — Pick (or create) the changelog knowledge base
 
@@ -116,7 +144,16 @@ update that entry (Step 6) rather than create a near-duplicate.
 
 ## Images
 
-Product updates land better with a screenshot of the actual feature. Once the
+Product updates land better with a picture of the actual feature (governed by
+the Step 0 answer). Two options:
+
+**Generated UI mockup** — when no real screenshot exists, draw the feature's
+screen as an inline `![alt](data:image/svg+xml;base64,…)` image, following
+`draft-articles`'s **Generating UI mockups** in full: the faithfulness gate
+(including the Opus 4.8+ model floor), the Step 0 theme choice, and the
+single-line/under-50KB data-URI contract all apply unchanged.
+
+**Real screenshot** — once the
 entry exists (Step 5 created it, or you're revising one in Step 6), host a real
 screenshot with `upload_image { changelogEntryId, contentType, dataBase64 }`:
 

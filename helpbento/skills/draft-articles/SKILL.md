@@ -14,6 +14,7 @@ allowed-tools:
   - mcp__plugin_helpbento_helpbento-api__list_categories
   - mcp__plugin_helpbento_helpbento-api__list_tags
   - mcp__plugin_helpbento_helpbento-api__list_knowledge_bases
+  - mcp__plugin_helpbento_helpbento-api__get_writing_settings
   - mcp__plugin_helpbento_helpbento-api__create_knowledge_base
   - mcp__plugin_helpbento_helpbento-api__update_knowledge_base
   - mcp__plugin_helpbento_helpbento-api__search_articles
@@ -39,6 +40,7 @@ allowed-tools:
   - Bash(qlmanage:*)
   - Bash(mktemp:*)
   - Write
+  - AskUserQuestion
   - Read
   - Grep
   - Glob
@@ -65,6 +67,7 @@ Code manages the OAuth tokens), so you never handle any credentials:
 - `mcp__plugin_helpbento_helpbento-api__list_categories` — active categories `{ id, name, slug, knowledgeBaseId }`.
 - `mcp__plugin_helpbento_helpbento-api__list_tags` — the company's EXISTING tags `{ id, name, color }`. These are the ONLY tags you may apply; you cannot create tags.
 - `mcp__plugin_helpbento_helpbento-api__list_knowledge_bases` — `{ id, name, slug, visibility }`.
+- `mcp__plugin_helpbento_helpbento-api__get_writing_settings` — `{ aiAssistantEnabled, defaultTone, companyContext }`: the company's AI Article Assistant settings. See **Step 0**.
 - `mcp__plugin_helpbento_helpbento-api__search_articles` — args `{ q, mode?, knowledgeBaseId? }`. `mode`: `full-text` (default — title + body), `title` (fast), or `semantic` (concept match via embeddings, e.g. "login" ↔ "auth"). Best-effort, not exhaustive.
 - `mcp__plugin_helpbento_helpbento-api__find_articles_for_symbols` — args `{ symbols, knowledgeBaseId? }`; finds articles that MENTION any of the given names (changed endpoints/flags/labels) with a match snippet — for spotting stale docs after a code change.
 - `mcp__plugin_helpbento_helpbento-api__suggest_linked_articles` — args `{ articleId, topic?, knowledgeBaseId? }`; suggests existing PUBLISHED articles worth cross-linking, by semantic similarity. See **Cross-linking related articles**.
@@ -78,6 +81,49 @@ Code manages the OAuth tokens), so you never handle any credentials:
 If a tool fails with an authentication error (e.g. the user hasn't connected
 yet, or their session expired), tell the user to run `/mcp`, choose **helpbento-api**,
 and complete the browser login — then retry. Don't retry blindly.
+
+## Step 0 — Kickoff: settings + run preferences
+
+Settle the run's preferences ONCE, up front, before reading code or writing
+anything:
+
+1. **Fetch the company's writing settings** — call `get_writing_settings`.
+   When `companyContext` is set it is ALWAYS part of your brief — real product
+   names, terminology, audience, and style guidance — even when
+   `aiAssistantEnabled` is false (that toggle gates the in-app editor
+   assistant, not the company's voice).
+2. **Check mockup viability:**
+   - **Model floor:** drawing SVG UI mockups is only reliable on
+     Opus 4.8-or-stronger models. If you are a smaller/faster model (e.g. a
+     Sonnet- or Haiku-class model), mockups are OFF for this run: skip the
+     visuals and theme questions, write text-only articles, and tell the user
+     that mockups need a stronger model.
+   - **Theme modes:** check whether the repo's design tokens define both a
+     light and a dark mode — a second token block under `[data-theme=`,
+     `.dark`, `data-mode`, or `prefers-color-scheme: dark`. Only when BOTH
+     exist does the theme question apply; otherwise use the one mode the app
+     has.
+3. **Ask ONE `AskUserQuestion` dialog** with the questions that are still
+   open — never a drip of separate asks. Skip any question the user's request
+   already answered ("no images", "dark mockups", "keep it casual"), and skip
+   the dialog entirely if nothing is open.
+   - **Visuals** — "Create UI mockup images for the article(s)?" Options:
+     `Yes, where they help` (recommended — feature-card art on feature
+     articles plus step illustrations where a how-to is clearer shown; every
+     mockup is still subject to the faithfulness gate), `You decide per
+     article`, `Text only` (no mockups and no feature cards).
+   - **Mockup theme** (only when both modes exist and visuals may be drawn) —
+     `App default`, `Light`, `Dark`. If they choose Text only, ignore this
+     answer.
+   - **Voice** — if `defaultTone` or `companyContext` is set:
+     `Use my Article Assistant settings` (recommended; name the tone and note
+     that company context was found), `Different tone for this run` (follow up
+     with the four tones), `Neutral professional`. If neither is set: ask the
+     tone directly — `Professional`, `Casual`, `Technical`, `Friendly`.
+4. **Apply the answers for the whole run:** visuals governs the feature-card
+   decision (Step 1) and **Generating UI mockups**; theme feeds
+   `references/mockups.md` → Step A; voice + `companyContext` govern all prose
+   you write.
 
 ## Step 1 — Understand what to document
 
@@ -93,15 +139,14 @@ and complete the browser login — then retry. Don't retry blindly.
   one per provider, etc.).
 - **Is this an app feature?** If the article documents a product feature
   (something users enable or use in the app — an inbox, analytics, an
-  integration), offer to include a **feature card**: a branded visual block
+  integration), it can carry a **feature card**: a branded visual block
   (icon + label + title + blurb, with a mockup image) that mirrors the in-app
-  feature pitch. Ask first — e.g. *"This reads like it documents an app feature.
-  Want me to add a feature card at the top?"* — and only add one if the user
-  agrees. When they do, you also **generate a mockup image** for the card —
-  but only when the faithfulness gate in **Generating UI mockups** passes; if
-  it fails, the card ships without an image. They can also opt out per card.
-  Skip the
-  card itself for conceptual, troubleshooting, or FAQ articles where a
+  feature pitch. Whether to add one follows the **Step 0 visuals answer** —
+  `Yes, where they help` → add the card on feature-documenting articles;
+  `You decide` → your judgment; `Text only` → no cards. The card's mockup
+  image is generated only when the faithfulness gate in **Generating UI
+  mockups** passes; if it fails, the card ships without an image. Never put a
+  card on conceptual, troubleshooting, or FAQ articles, where a
   marketing-style card would feel out of place. See the feature block in Step 4.
 
 ## Step 2 — Fetch the existing taxonomy
@@ -211,8 +256,11 @@ No screenshots, no hosting, no new dependencies. The full craft and the technica
 contract are in `references/mockups.md` — **read it before generating one.**
 
 **The faithfulness gate — check BEFORE deciding to draw.** A mockup depicts a
-real screen of this app, so you may only draw one when ALL three are true:
+real screen of this app, so you may only draw one when ALL four are true:
 
+0. You are an **Opus 4.8-or-stronger model**. Mockup drawing is not reliable
+   below that tier — smaller models (Sonnet-, Haiku-class) skip mockups for
+   the whole run and say so (Step 0).
 1. You have READ the screen's actual template/markup in this repo **in this
    session** — the component HTML/JSX/template file for that route. Inferring
    the screen from its route name, the feature name, or general knowledge of
@@ -222,19 +270,23 @@ real screen of this app, so you may only draw one when ALL three are true:
 3. You found the repo's design tokens (`references/mockups.md` → Step A), or
    you are deliberately using the documented neutral default and will say so.
 
-If any of the three is false, draw nothing: omit the `image:` line / the
+If any of the four is false, draw nothing: omit the `image:` line / the
 `![alt](…)` and note in your report which gate failed. A card with no image
 renders fine; a mockup of a screen that doesn't exist as drawn misleads every
 reader. The same rule applies element-by-element while drawing: never fill a
 gap with an invented control or label — leave it out.
 
-**When to generate one** (only for screens that pass the gate)
-- **Feature cards:** when you add a feature card (Step 1 / Step 4) and the
-  feature's main screen passes the gate, draw a matching mockup and put it on
-  the card's `image:` line. The user can say "no image" for any card.
+**When to generate one** (governed by the Step 0 visuals answer, and only for
+screens that pass the gate)
+- **Feature cards:** when an article carries a feature card (Step 1 / Step 4)
+  and the feature's main screen passes the gate, draw a matching mockup and
+  put it on the card's `image:` line.
 - **Instructional steps:** when a "how to do X" step is clearer shown, add an
   inline `![alt](data:…)` mockup of that exact screen — the gate applies to
   each screen you depict.
+- Draw every mockup in the **theme chosen at Step 0** (`references/mockups.md`
+  → Step A shows how to pull that mode's token values). Never mix modes across
+  one run's mockups.
 
 **Fidelity follows purpose** (see `references/mockups.md` → Step C):
 - decorative / spotlight card → more abstract, brand-forward — abstraction

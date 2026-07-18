@@ -15,6 +15,7 @@ description: >-
   Never publishes a page, never makes a version public or default, never deletes.
 allowed-tools:
   - mcp__plugin_helpbento_helpbento-api__list_knowledge_bases
+  - mcp__plugin_helpbento_helpbento-api__get_writing_settings
   - mcp__plugin_helpbento_helpbento-api__create_knowledge_base
   - mcp__plugin_helpbento_helpbento-api__update_knowledge_base
   - mcp__plugin_helpbento_helpbento-api__list_categories
@@ -34,6 +35,7 @@ allowed-tools:
   - mcp__plugin_helpbento_helpbento-api__upload_image
   - Bash(node:*)
   - Bash(git:*)
+  - AskUserQuestion
   - Read
   - Grep
   - Glob
@@ -125,6 +127,33 @@ asked or confirmed the name.
 - **Update:** `update_knowledge_base { knowledgeBaseId, name?, slug?, visibility?, description? }`.
   A slug change moves the public URL — confirm first. You **cannot** change a KB's
   type (create a new KB instead), nor delete a KB (that's the admin UI).
+
+## Step 0 — Kickoff: settings + run preferences
+
+When the run will write PROSE — doc pages or release notes — settle preferences
+once, up front (a pure `refresh_api_spec` run needs no kickoff):
+
+1. **Fetch writing settings** — call `get_writing_settings`
+   (`{ aiAssistantEnabled, defaultTone, companyContext }`). A set
+   `companyContext` is always part of your brief (product names, terminology,
+   audience, style), even when `aiAssistantEnabled` is false.
+2. **Check mockup viability** — exactly as `draft-articles` Step 0: mockups
+   are only reliable on **Opus 4.8-or-stronger models** (smaller models skip
+   them for the run and say so), and the theme question applies only when the
+   repo's design tokens define both a light and a dark mode.
+3. **Ask ONE `AskUserQuestion` dialog** with whichever of these the user's
+   request hasn't already answered (skip the dialog if none are open):
+   - **Visuals** — "Create UI mockup images for the doc pages?"
+     `Yes, where they help` (recommended; each mockup still subject to
+     `draft-articles`'s faithfulness gate) / `You decide per page` /
+     `Text only`.
+   - **Mockup theme** (both modes exist) — `App default` / `Light` / `Dark`;
+     draw every mockup in the chosen mode.
+   - **Voice** — if `defaultTone` or `companyContext` is set:
+     `Use my Article Assistant settings` (recommended; name the tone) /
+     `Different tone for this run` / `Neutral technical`. If neither is set,
+     skip this question — dev docs default to a neutral technical voice.
+4. Apply the answers for the whole run.
 
 ## Step 1 — Pick the developer-docs knowledge base
 
