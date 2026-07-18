@@ -13,6 +13,12 @@ Markdown as a single-line `data:image/svg+xml;base64,…` URI. No hosting, no
 upload, no new dependencies. It renders in the editor and on the public page
 because the HelpBento renderer's image sanitizer allows `data:image/…` URIs.
 
+**Prerequisite:** the faithfulness gate in `SKILL.md` → "Generating UI mockups"
+must already have passed for the screen you're about to draw — you have read
+that screen's actual template file this session and hold its real labels. If
+you reached this file without that, go back: the answer to "I can't recreate
+this screen faithfully" is NO image, not a best guess.
+
 ## Step A — Derive the visual style from the codebase
 
 Before drawing, mine the target repo so the mockup looks like *their* product, not
@@ -60,7 +66,10 @@ border `#e5e5e9`, primary `#4f46e5`, radius 8/12px, font system sans.
 ## Step C — Fidelity by purpose
 
 - **Decorative / spotlight** (a top-of-article feature card setting the vibe):
-  more abstract and brand-forward; exact labels optional.
+  more abstract and brand-forward. Abstraction means showing LESS — crop to a
+  representative slice, drop secondary labels, simplify shapes. Every element
+  you DO show must exist on the real screen; a decorative purpose is never a
+  license to invent controls, labels, or layout.
 - **Instructional / demonstrative** ("here's how to do X"): faithful
   near-screenshot — accurate layout, REAL labels, and the actual control the
   reader must act on.
@@ -80,6 +89,10 @@ border `#e5e5e9`, primary `#4f46e5`, radius 8/12px, font system sans.
    with NO whitespace — required, because the inline-image parser rejects
    whitespace in the URL and a raw newline would truncate the `image:` line.
 3. Validate BEFORE embedding:
+   - **Faithful:** every labeled element in the SVG (nav item, button, field,
+     heading, status) traces back to the template file you read. Delete any
+     element you cannot point to in the code — or, if that guts the drawing,
+     drop the mockup entirely.
    - **Size:** the data URI must be `< 50000` bytes
      (`printf 'data:image/svg+xml;base64,%s' "$(base64 < mockup.svg | tr -d '\n')" | wc -c`).
      If over, simplify the drawing.

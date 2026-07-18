@@ -97,8 +97,10 @@ and complete the browser login — then retry. Don't retry blindly.
   (icon + label + title + blurb, with a mockup image) that mirrors the in-app
   feature pitch. Ask first — e.g. *"This reads like it documents an app feature.
   Want me to add a feature card at the top?"* — and only add one if the user
-  agrees. When they do, you also **generate a mockup image** for the card by
-  default (see **Generating UI mockups**); they can opt out per card. Skip the
+  agrees. When they do, you also **generate a mockup image** for the card —
+  but only when the faithfulness gate in **Generating UI mockups** passes; if
+  it fails, the card ships without an image. They can also opt out per card.
+  Skip the
   card itself for conceptual, troubleshooting, or FAQ articles where a
   marketing-style card would feel out of place. See the feature block in Step 4.
 
@@ -208,15 +210,35 @@ that repo's design tokens — and embed it inline as a `data:image/svg+xml` imag
 No screenshots, no hosting, no new dependencies. The full craft and the technical
 contract are in `references/mockups.md` — **read it before generating one.**
 
-**When to generate one**
-- **Every feature card** gets a generated mockup by default: when you add a
-  feature card (Step 1 / Step 4), draw a matching mockup and put it on the card's
-  `image:` line. The user can say "no image" for any card.
+**The faithfulness gate — check BEFORE deciding to draw.** A mockup depicts a
+real screen of this app, so you may only draw one when ALL three are true:
+
+1. You have READ the screen's actual template/markup in this repo **in this
+   session** — the component HTML/JSX/template file for that route. Inferring
+   the screen from its route name, the feature name, or general knowledge of
+   what such screens usually look like does not pass.
+2. You can list, verbatim from that template, the real labels you will draw:
+   nav items, button text, field placeholders, column headers, status names.
+3. You found the repo's design tokens (`references/mockups.md` → Step A), or
+   you are deliberately using the documented neutral default and will say so.
+
+If any of the three is false, draw nothing: omit the `image:` line / the
+`![alt](…)` and note in your report which gate failed. A card with no image
+renders fine; a mockup of a screen that doesn't exist as drawn misleads every
+reader. The same rule applies element-by-element while drawing: never fill a
+gap with an invented control or label — leave it out.
+
+**When to generate one** (only for screens that pass the gate)
+- **Feature cards:** when you add a feature card (Step 1 / Step 4) and the
+  feature's main screen passes the gate, draw a matching mockup and put it on
+  the card's `image:` line. The user can say "no image" for any card.
 - **Instructional steps:** when a "how to do X" step is clearer shown, add an
-  inline `![alt](data:…)` mockup of that exact screen.
+  inline `![alt](data:…)` mockup of that exact screen — the gate applies to
+  each screen you depict.
 
 **Fidelity follows purpose** (see `references/mockups.md` → Step C):
-- decorative / spotlight card → more abstract, brand-forward;
+- decorative / spotlight card → more abstract, brand-forward — abstraction
+  means showing LESS of the real screen, never inventing what isn't there;
 - demonstrating a how-to → faithful near-screenshot with REAL labels.
 
 **The non-negotiable contract** (details in `references/mockups.md` → Step D):
