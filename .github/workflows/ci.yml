@@ -20,7 +20,9 @@ jobs:
       - name: Validate marketplace
         run: claude plugin validate --strict .
 
-  # TODO(post-deploy): add a connect smoke test against the deployed MCP origin
-  # (fetch /.well-known/oauth-authorization-server and tools/list) once the
-  # backend is live at api.helpbento.com — until then there is no reachable
-  # origin to smoke-test.
+  # TODO: add a connect smoke test against the deployed MCP origin — fetch
+  # https://mcp.helpbento.com/.well-known/oauth-authorization-server and assert
+  # it advertises a registration_endpoint. The old blocker (no reachable
+  # backend) is gone: the origin went live 2026-09-18. Note tools/list can NOT
+  # be part of it — /mcp requires a bearer token, so an unauthenticated CI run
+  # only ever gets a 401 challenge.
