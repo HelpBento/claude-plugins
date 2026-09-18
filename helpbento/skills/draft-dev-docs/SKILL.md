@@ -14,25 +14,25 @@ description: >-
   public-version release-notes edits are LIVE and require explicit confirmation.
   Never publishes a page, never makes a version public or default, never deletes.
 allowed-tools:
-  - mcp__plugin_helpbento_helpbento-api__list_knowledge_bases
-  - mcp__plugin_helpbento_helpbento-api__get_writing_settings
-  - mcp__plugin_helpbento_helpbento-api__create_knowledge_base
-  - mcp__plugin_helpbento_helpbento-api__update_knowledge_base
-  - mcp__plugin_helpbento_helpbento-api__list_categories
-  - mcp__plugin_helpbento_helpbento-api__list_doc_versions
-  - mcp__plugin_helpbento_helpbento-api__list_api_specs
-  - mcp__plugin_helpbento_helpbento-api__search_articles
-  - mcp__plugin_helpbento_helpbento-api__find_articles_for_symbols
-  - mcp__plugin_helpbento_helpbento-api__suggest_linked_articles
-  - mcp__plugin_helpbento_helpbento-api__get_article
-  - mcp__plugin_helpbento_helpbento-api__create_draft_article
-  - mcp__plugin_helpbento_helpbento-api__update_article
-  - mcp__plugin_helpbento_helpbento-api__create_category
-  - mcp__plugin_helpbento_helpbento-api__update_category
-  - mcp__plugin_helpbento_helpbento-api__create_doc_version
-  - mcp__plugin_helpbento_helpbento-api__refresh_api_spec
-  - mcp__plugin_helpbento_helpbento-api__update_dev_docs_release_notes
-  - mcp__plugin_helpbento_helpbento-api__upload_image
+  - mcp__plugin_helpbento_helpbento__list_knowledge_bases
+  - mcp__plugin_helpbento_helpbento__get_writing_settings
+  - mcp__plugin_helpbento_helpbento__create_knowledge_base
+  - mcp__plugin_helpbento_helpbento__update_knowledge_base
+  - mcp__plugin_helpbento_helpbento__list_categories
+  - mcp__plugin_helpbento_helpbento__list_doc_versions
+  - mcp__plugin_helpbento_helpbento__list_api_specs
+  - mcp__plugin_helpbento_helpbento__search_articles
+  - mcp__plugin_helpbento_helpbento__find_articles_for_symbols
+  - mcp__plugin_helpbento_helpbento__suggest_linked_articles
+  - mcp__plugin_helpbento_helpbento__get_article
+  - mcp__plugin_helpbento_helpbento__create_draft_article
+  - mcp__plugin_helpbento_helpbento__update_article
+  - mcp__plugin_helpbento_helpbento__create_category
+  - mcp__plugin_helpbento_helpbento__update_category
+  - mcp__plugin_helpbento_helpbento__create_doc_version
+  - mcp__plugin_helpbento_helpbento__refresh_api_spec
+  - mcp__plugin_helpbento_helpbento__update_dev_docs_release_notes
+  - mcp__plugin_helpbento_helpbento__upload_image
   - Bash(node:*)
   - Bash(git:*)
   - AskUserQuestion
@@ -95,7 +95,7 @@ or reorder. Those stay in the HelpBento admin UI.
 
 Use the plugin's **MCP tools** (authenticated by a one-time browser login; you
 never handle credentials). If a tool returns an authentication error, tell the
-user to run `/mcp`, choose **helpbento-api**, and complete the browser login, then
+user to run `/mcp`, choose **helpbento**, and complete the browser login, then
 retry — don't retry blindly.
 
 - `list_knowledge_bases` → `[{ id, name, slug, visibility, type }]`. **`type`

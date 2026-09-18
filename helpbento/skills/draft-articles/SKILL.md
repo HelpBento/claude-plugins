@@ -11,24 +11,24 @@ description: >-
   Can also revise an EXISTING article — reading its current content and writing
   the edits back as a draft. Never publishes.
 allowed-tools:
-  - mcp__plugin_helpbento_helpbento-api__list_categories
-  - mcp__plugin_helpbento_helpbento-api__list_tags
-  - mcp__plugin_helpbento_helpbento-api__list_knowledge_bases
-  - mcp__plugin_helpbento_helpbento-api__get_writing_settings
-  - mcp__plugin_helpbento_helpbento-api__create_knowledge_base
-  - mcp__plugin_helpbento_helpbento-api__update_knowledge_base
-  - mcp__plugin_helpbento_helpbento-api__search_articles
-  - mcp__plugin_helpbento_helpbento-api__find_articles_for_symbols
-  - mcp__plugin_helpbento_helpbento-api__suggest_linked_articles
-  - mcp__plugin_helpbento_helpbento-api__list_content_gaps
-  - mcp__plugin_helpbento_helpbento-api__create_draft_article
-  - mcp__plugin_helpbento_helpbento-api__get_article
-  - mcp__plugin_helpbento_helpbento-api__update_article
-  - mcp__plugin_helpbento_helpbento-api__archive_article
-  - mcp__plugin_helpbento_helpbento-api__unarchive_article
-  - mcp__plugin_helpbento_helpbento-api__create_category
-  - mcp__plugin_helpbento_helpbento-api__update_category
-  - mcp__plugin_helpbento_helpbento-api__upload_image
+  - mcp__plugin_helpbento_helpbento__list_categories
+  - mcp__plugin_helpbento_helpbento__list_tags
+  - mcp__plugin_helpbento_helpbento__list_knowledge_bases
+  - mcp__plugin_helpbento_helpbento__get_writing_settings
+  - mcp__plugin_helpbento_helpbento__create_knowledge_base
+  - mcp__plugin_helpbento_helpbento__update_knowledge_base
+  - mcp__plugin_helpbento_helpbento__search_articles
+  - mcp__plugin_helpbento_helpbento__find_articles_for_symbols
+  - mcp__plugin_helpbento_helpbento__suggest_linked_articles
+  - mcp__plugin_helpbento_helpbento__list_content_gaps
+  - mcp__plugin_helpbento_helpbento__create_draft_article
+  - mcp__plugin_helpbento_helpbento__get_article
+  - mcp__plugin_helpbento_helpbento__update_article
+  - mcp__plugin_helpbento_helpbento__archive_article
+  - mcp__plugin_helpbento_helpbento__unarchive_article
+  - mcp__plugin_helpbento_helpbento__create_category
+  - mcp__plugin_helpbento_helpbento__update_category
+  - mcp__plugin_helpbento_helpbento__upload_image
   - Bash(node:*)
   - Bash(git:*)
   - Bash(base64:*)
@@ -64,22 +64,22 @@ Use the plugin's **MCP tools**. They're served by HelpBento over an
 authenticated connection — the user connects once via a browser login (Claude
 Code manages the OAuth tokens), so you never handle any credentials:
 
-- `mcp__plugin_helpbento_helpbento-api__list_categories` — active categories `{ id, name, slug, knowledgeBaseId }`.
-- `mcp__plugin_helpbento_helpbento-api__list_tags` — the company's EXISTING tags `{ id, name, color }`. These are the ONLY tags you may apply; you cannot create tags.
-- `mcp__plugin_helpbento_helpbento-api__list_knowledge_bases` — `{ id, name, slug, visibility }`.
-- `mcp__plugin_helpbento_helpbento-api__get_writing_settings` — `{ aiAssistantEnabled, defaultTone, companyContext }`: the company's AI Article Assistant settings. See **Step 0**.
-- `mcp__plugin_helpbento_helpbento-api__search_articles` — args `{ q, mode?, knowledgeBaseId? }`. `mode`: `full-text` (default — title + body), `title` (fast), or `semantic` (concept match via embeddings, e.g. "login" ↔ "auth"). Best-effort, not exhaustive.
-- `mcp__plugin_helpbento_helpbento-api__find_articles_for_symbols` — args `{ symbols, knowledgeBaseId? }`; finds articles that MENTION any of the given names (changed endpoints/flags/labels) with a match snippet — for spotting stale docs after a code change.
-- `mcp__plugin_helpbento_helpbento-api__suggest_linked_articles` — args `{ articleId, topic?, knowledgeBaseId? }`; suggests existing PUBLISHED articles worth cross-linking, by semantic similarity. See **Cross-linking related articles**.
-- `mcp__plugin_helpbento_helpbento-api__create_draft_article` — args `{ title, markdown, categoryId?, knowledgeBaseId?, excerpt?, tags? }`; `tags` are ids/names from `list_tags` (unknown tags are ignored). Returns `{ articleId, versionId, status, adminUrl, ignoredTags }`.
-- `mcp__plugin_helpbento_helpbento-api__get_article` — args `{ articleId }`; returns the existing article's body **as Markdown** plus `{ title, slug, status, contentSource, hasUnpublishedDraft, excerpt, tags, categoryId, knowledgeBaseId }`. Use this before updating, so you edit what's actually there.
-- `mcp__plugin_helpbento_helpbento-api__update_article` — args `{ articleId, markdown, title?, excerpt?, tags?, categoryId? }`; works on any article (draft **or published**). ALL edits — body AND title/excerpt/tags/categoryId — land as a DRAFT and never publish: on a published article they are held in the draft and only go live when a human clicks Publish, so the public title and URL stay unchanged until then. `tags` are ids/names from `list_tags` (unknown tags are ignored). Returns `{ articleId, versionId, status, adminUrl, ignoredTags }`.
-- `mcp__plugin_helpbento_helpbento-api__create_category` — args `{ name, knowledgeBaseId?, description?, parentId? }`; creates a LIVE (but unpublished) category. Returns `{ categoryId, name, manageUrl }`.
-- `mcp__plugin_helpbento_helpbento-api__update_category` — args `{ categoryId, name?, description?, parentId? }`; renames/edits a category (a LIVE change). Returns `{ categoryId, manageUrl }`.
-- `mcp__plugin_helpbento_helpbento-api__upload_image` — args `{ articleId, contentType, dataBase64 }`; hosts a real screenshot/mockup and returns `{ path, url }` to embed. See **Uploading real images**.
+- `mcp__plugin_helpbento_helpbento__list_categories` — active categories `{ id, name, slug, knowledgeBaseId }`.
+- `mcp__plugin_helpbento_helpbento__list_tags` — the company's EXISTING tags `{ id, name, color }`. These are the ONLY tags you may apply; you cannot create tags.
+- `mcp__plugin_helpbento_helpbento__list_knowledge_bases` — `{ id, name, slug, visibility }`.
+- `mcp__plugin_helpbento_helpbento__get_writing_settings` — `{ aiAssistantEnabled, defaultTone, companyContext }`: the company's AI Article Assistant settings. See **Step 0**.
+- `mcp__plugin_helpbento_helpbento__search_articles` — args `{ q, mode?, knowledgeBaseId? }`. `mode`: `full-text` (default — title + body), `title` (fast), or `semantic` (concept match via embeddings, e.g. "login" ↔ "auth"). Best-effort, not exhaustive.
+- `mcp__plugin_helpbento_helpbento__find_articles_for_symbols` — args `{ symbols, knowledgeBaseId? }`; finds articles that MENTION any of the given names (changed endpoints/flags/labels) with a match snippet — for spotting stale docs after a code change.
+- `mcp__plugin_helpbento_helpbento__suggest_linked_articles` — args `{ articleId, topic?, knowledgeBaseId? }`; suggests existing PUBLISHED articles worth cross-linking, by semantic similarity. See **Cross-linking related articles**.
+- `mcp__plugin_helpbento_helpbento__create_draft_article` — args `{ title, markdown, categoryId?, knowledgeBaseId?, excerpt?, tags? }`; `tags` are ids/names from `list_tags` (unknown tags are ignored). Returns `{ articleId, versionId, status, adminUrl, ignoredTags }`.
+- `mcp__plugin_helpbento_helpbento__get_article` — args `{ articleId }`; returns the existing article's body **as Markdown** plus `{ title, slug, status, contentSource, hasUnpublishedDraft, excerpt, tags, categoryId, knowledgeBaseId }`. Use this before updating, so you edit what's actually there.
+- `mcp__plugin_helpbento_helpbento__update_article` — args `{ articleId, markdown, title?, excerpt?, tags?, categoryId? }`; works on any article (draft **or published**). ALL edits — body AND title/excerpt/tags/categoryId — land as a DRAFT and never publish: on a published article they are held in the draft and only go live when a human clicks Publish, so the public title and URL stay unchanged until then. `tags` are ids/names from `list_tags` (unknown tags are ignored). Returns `{ articleId, versionId, status, adminUrl, ignoredTags }`.
+- `mcp__plugin_helpbento_helpbento__create_category` — args `{ name, knowledgeBaseId?, description?, parentId? }`; creates a LIVE (but unpublished) category. Returns `{ categoryId, name, manageUrl }`.
+- `mcp__plugin_helpbento_helpbento__update_category` — args `{ categoryId, name?, description?, parentId? }`; renames/edits a category (a LIVE change). Returns `{ categoryId, manageUrl }`.
+- `mcp__plugin_helpbento_helpbento__upload_image` — args `{ articleId, contentType, dataBase64 }`; hosts a real screenshot/mockup and returns `{ path, url }` to embed. See **Uploading real images**.
 
 If a tool fails with an authentication error (e.g. the user hasn't connected
-yet, or their session expired), tell the user to run `/mcp`, choose **helpbento-api**,
+yet, or their session expired), tell the user to run `/mcp`, choose **helpbento**,
 and complete the browser login — then retry. Don't retry blindly.
 
 ## Step 0 — Kickoff: settings + run preferences

@@ -15,7 +15,7 @@ claude plugin install helpbento@helpbento
 ```
 
 Then connect once with a browser login (no API key to paste): run `/mcp`,
-choose **helpbento-api**, and approve in the browser. Full usage docs live in
+choose **helpbento**, and approve in the browser. Full usage docs live in
 the [plugin README](./helpbento/README.md).
 
 ## Requirements
@@ -25,7 +25,7 @@ the [plugin README](./helpbento/README.md).
 
 ## Contributing
 
-The plugin name (`helpbento`), the MCP server name (`helpbento-api`), and the
+The plugin name (`helpbento`), the MCP server name (`helpbento`), and the
 tool names in each skill's `allowed-tools` are a contract with the HelpBento
 service — renaming any of them breaks the plugin. Validate before pushing:
 

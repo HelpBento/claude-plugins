@@ -10,14 +10,14 @@ description: >-
   draft for human review. Targets a `changelog`-type knowledge base (NOT the
   developer-docs API release notes — that's `draft-dev-docs`). Never publishes.
 allowed-tools:
-  - mcp__plugin_helpbento_helpbento-api__list_knowledge_bases
-  - mcp__plugin_helpbento_helpbento-api__create_knowledge_base
-  - mcp__plugin_helpbento_helpbento-api__update_knowledge_base
-  - mcp__plugin_helpbento_helpbento-api__list_changelog_entries
-  - mcp__plugin_helpbento_helpbento-api__get_changelog_entry
-  - mcp__plugin_helpbento_helpbento-api__create_changelog_entry
-  - mcp__plugin_helpbento_helpbento-api__update_changelog_entry
-  - mcp__plugin_helpbento_helpbento-api__upload_image
+  - mcp__plugin_helpbento_helpbento__list_knowledge_bases
+  - mcp__plugin_helpbento_helpbento__create_knowledge_base
+  - mcp__plugin_helpbento_helpbento__update_knowledge_base
+  - mcp__plugin_helpbento_helpbento__list_changelog_entries
+  - mcp__plugin_helpbento_helpbento__get_changelog_entry
+  - mcp__plugin_helpbento_helpbento__create_changelog_entry
+  - mcp__plugin_helpbento_helpbento__update_changelog_entry
+  - mcp__plugin_helpbento_helpbento__upload_image
   - Bash(node:*)
   - Bash(git:*)
   - Bash(base64:*)
@@ -60,7 +60,7 @@ NOT start the body with a top-level `#` that repeats the title.
 
 Use the plugin's **MCP tools** (authenticated by a one-time browser login; you
 never handle credentials). If a tool returns an authentication error, tell the user
-to run `/mcp`, choose **helpbento-api**, and complete the browser login, then retry
+to run `/mcp`, choose **helpbento**, and complete the browser login, then retry
 — don't retry blindly.
 
 - `list_knowledge_bases` → `[{ id, name, slug, visibility, type }]`. Filter to

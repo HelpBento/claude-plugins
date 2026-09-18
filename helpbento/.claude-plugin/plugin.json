@@ -1,6 +1,6 @@
 {
   "name": "helpbento",
-  "version": "0.12.2",
+  "version": "0.13.0",
   "description": "Draft HelpBento knowledge base articles, developer docs (pages, sections, API references, versions, release notes), and changelog / product-update entries from your codebase, and push them to your HelpBento account as drafts for review (never auto-published). Can also create and update knowledge bases. Connect with a browser login; no API key to paste.",
   "author": { "name": "HelpBento", "url": "https://app.helpbento.com" },
   "homepage": "https://helpbento.com/docs/claude-plugin",

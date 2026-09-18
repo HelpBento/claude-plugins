@@ -27,12 +27,12 @@ once with a browser login (OAuth) — there's no API key to paste.
 ## Connect
 
 1. Install the plugin.
-2. Run `/mcp`, choose **helpbento-api**, and complete the **browser login** when
+2. Run `/mcp`, choose **helpbento**, and complete the **browser login** when
    Claude Code opens it. Sign in to HelpBento and click **Approve**.
 3. That's it — Claude Code stores and refreshes the tokens. Drafts you create are
    attributed to your HelpBento user.
 
-To disconnect or re-authenticate, use `/mcp` → **helpbento-api** → *Clear
+To disconnect or re-authenticate, use `/mcp` → **helpbento** → *Clear
 authentication*.
 
 ## Usage
