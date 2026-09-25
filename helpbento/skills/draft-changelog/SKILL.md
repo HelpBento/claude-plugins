@@ -22,8 +22,6 @@ allowed-tools:
   - Bash(git:*)
   - Bash(base64:*)
   - Bash(tr:*)
-  - Bash(wc:*)
-  - Bash(xmllint:*)
   - Bash(rsvg-convert:*)
   - Bash(cairosvg:*)
   - Bash(qlmanage:*)
@@ -74,7 +72,7 @@ to run `/mcp`, choose **helpbento**, and complete the browser login, then retry
 - `get_changelog_entry { entryId }` → the entry body **as Markdown** plus `{ title, versionNumber, releaseDate, status, contentSource, hasUnpublishedDraft, knowledgeBaseId }`. Use before updating.
 - `create_changelog_entry { knowledgeBaseId, title, markdown, versionNumber?, releaseDate? }` → `{ entryId, versionId, status, adminUrl }`.
 - `update_changelog_entry { entryId, markdown, title?, versionNumber?, releaseDate? }` → `{ entryId, versionId, status, adminUrl }`.
-- `upload_image { changelogEntryId, contentType, dataBase64 }` → `{ path, url }`. See **Images**.
+- `upload_image { changelogEntryId, svg }` (a UI mockup you drew, as plain SVG text) or `{ changelogEntryId, contentType, dataBase64 }` (a real screenshot) → `{ path, url }` (plus `removed` and `notice` for an SVG). See **Images**.
 
 ## Step 0 — Kickoff: image preferences
 
@@ -82,12 +80,16 @@ Settle image preferences once, up front (changelog entries have no voice
 settings — no tone question here):
 
 1. **Check mockup viability** — as in `draft-articles` Step 0: generated UI
-   mockups are only reliable on **Opus 4.8-or-stronger models** (smaller
-   models skip them for the run and say so), and the theme question applies
-   only when the repo's design tokens define both a light and a dark mode.
+   mockups are SVGs you draw yourself, so they're only as good as the model
+   drawing them, and only reliable on **Opus 4.8-or-stronger models** (smaller
+   models skip them for the run and tell the user why), and the theme question
+   applies only when the repo's design tokens define both a light and a dark
+   mode.
 2. **Ask ONE `AskUserQuestion` dialog** with whichever of these the user's
    request hasn't already answered (skip the dialog if none are open):
-   - **Images** — "Illustrate the entry with images?"
+   - **Images** — "Illustrate the entry with images? Where there's no real
+     screenshot I'd draw an SVG mockup from your code, which is only as good
+     as the model you're running."
      `Yes, where they help` (recommended — a real screenshot if one exists,
      else a generated UI mockup subject to `draft-articles`'s faithfulness
      gate) / `You decide` / `Text only`.
@@ -148,10 +150,13 @@ Product updates land better with a picture of the actual feature (governed by
 the Step 0 answer). Two options:
 
 **Generated UI mockup** — when no real screenshot exists, draw the feature's
-screen as an inline `![alt](data:image/svg+xml;base64,…)` image, following
-`draft-articles`'s **Generating UI mockups** in full: the faithfulness gate
-(including the Opus 4.8+ model floor), the Step 0 theme choice, and the
-single-line/under-50KB data-URI contract all apply unchanged.
+screen as SVG, following `draft-articles`'s **Generating UI mockups** and
+`draft-articles/references/mockups.md` in full: the faithfulness gate
+(including the Opus 4.8+ model floor), the Step 0 theme choice, and the upload
+contract all apply unchanged. Once the entry exists, upload it with
+`upload_image { changelogEntryId, svg }` and embed the returned `url` as
+`![alt](url)` (for a new entry: create it text-only, upload, then
+`update_changelog_entry` with the image lines).
 
 **Real screenshot** — once the
 entry exists (Step 5 created it, or you're revising one in Step 6), host a real
@@ -185,4 +190,6 @@ To revise an entry (the release changed, a line is wrong, add a section) —
 
 For each entry, report the title, the version/date, and the returned `adminUrl`
 deep-link. Remind the user these are **DRAFTS** — nothing goes live on the public
-changelog until a human reviews and publishes each one in HelpBento.
+changelog until a human reviews and publishes each one in HelpBento. If you drew
+mockups, remind them they're model-drawn approximations, only as good as the
+model that drew them, and worth checking in the editor before publishing.

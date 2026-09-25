@@ -1,30 +1,72 @@
 # Generating UI mockups for article images
 
-This reference tells you HOW to hand-draw a bespoke SVG mockup of the product you
-are documenting and embed it inline as a `data:` image. The trigger and the short
-rules live in `SKILL.md` → "Generating UI mockups"; this file is the detailed
-craft and the technical contract that keeps the image from breaking on import.
+This guide tells you WHEN you may hand-draw an SVG mockup of the product you are
+documenting, HOW to draw one in the product's own style, and how to host it in
+HelpBento with `upload_image` so it can be embedded in an article, a
+developer-docs page, or a changelog entry.
 
 ## What you're making
 
-A clean SVG that looks like a real screen of THIS codebase's app — drawn from the
-app's own design tokens (colors, radii, font) — embedded directly into the article
-Markdown as a single-line `data:image/svg+xml;base64,…` URI. No hosting, no
-upload, no new dependencies. It renders in the editor and on the public page
-because the HelpBento renderer's image sanitizer allows `data:image/…` URIs.
+A clean SVG that looks like a real screen of the app being documented, drawn from
+that app's own design tokens (colors, radii, font) and its real labels. You write
+the SVG markup yourself, then pass it as plain text to `upload_image`, which
+sanitizes it, stores it in the article's (or changelog entry's) media folder, and
+returns a short URL to embed.
 
-**Prerequisite:** the faithfulness gate in `SKILL.md` → "Generating UI mockups"
-must already have passed for the screen you're about to draw — you have read
-that screen's actual template file this session and hold its real labels. If
-you reached this file without that, go back: the answer to "I can't recreate
-this screen faithfully" is NO image, not a best guess.
+## Tell the user: a mockup is only as good as the model drawing it
 
-## Step A — Derive the visual style from the codebase
+A mockup is not a screenshot. You, the AI model in this session, draw it by hand
+as SVG, so its accuracy and polish depend entirely on how capable that model is.
+Before drawing any, make sure the user knows this: say it when you offer or
+confirm mockups (e.g. "These are SVG mockups I draw myself rather than
+screenshots, so they're only as good as the model you're running; you can review
+or replace them in the HelpBento editor"), and repeat it in your final report
+next to the list of mockups you made.
+
+- Mockups need a frontier-tier model (Claude Opus-class or your provider's most
+  capable model). A smaller or faster model's mockups come out visibly off: tell
+  the user so, and default to text-only articles unless they still want mockups.
+- Always offer a text-only option. Articles render fine with no images.
+
+## The faithfulness gate: check BEFORE deciding to draw
+
+A mockup depicts a real screen of the app, so you may only draw one when ALL of
+these are true:
+
+1. You can read the app's source code in this session, and you have READ the
+   screen's actual template/markup (the component HTML/JSX/template file for
+   that route). Inferring the screen from its route name, the feature name, or
+   general knowledge of what such screens usually look like does not pass. A chat
+   with no access to the codebase never passes: offer to upload a real
+   screenshot instead.
+2. You can list, verbatim from that template, the real labels you will draw: nav
+   items, button text, field placeholders, column headers, status names.
+3. You found the app's design tokens (Step A), or you are deliberately using the
+   neutral default below and will say so.
+
+If any is false, draw nothing: leave the image out and tell the user which gate
+failed. A feature card with no image renders fine; a mockup of a screen that
+doesn't exist as drawn misleads every reader. The same rule applies element by
+element while drawing: never fill a gap with an invented control or label; leave
+it out.
+
+## When to draw one
+
+Only when the user wants visuals and the screen passes the gate:
+
+- **Feature cards:** when an article documents an app feature and carries a
+  ` ```feature ` card, draw the feature's main screen for the card's `image:`.
+- **Instructional steps:** when a "how to do X" step is clearer shown, add an
+  inline image of that exact screen.
+- If the app has both a light and a dark mode and the user hasn't said which,
+  ask once; draw every mockup in a run in the same mode.
+
+## Step A: Derive the visual style from the codebase
 
 Before drawing, mine the target repo so the mockup looks like *their* product, not
 a generic wireframe:
 
-1. Find design tokens — search (Grep/Glob/Read), in order:
+1. Find design tokens — search the codebase, in order:
    - CSS custom properties / SCSS: `**/_variables.scss`, `**/tokens.*`,
      `**/theme.*`, any `:root { --… }`.
    - Tailwind: `tailwind.config.*` (`theme.extend.colors`, `borderRadius`,
@@ -32,12 +74,12 @@ a generic wireframe:
    - CSS-in-JS / design-system package: a `theme` object, a `tokens` export.
 2. Extract and note: brand/primary color, background, surface/card, text, muted
    text, border, the radius scale, font family, shadow style.
-   **Theme mode:** extract the values for the mode chosen at kickoff (Step 0).
-   Dark values usually live in an override block — `[data-theme="dark"]`,
-   `.dark`, `data-mode`, or `@media (prefers-color-scheme: dark)` — layered
-   over the `:root` defaults; "App default" means the plain `:root` values
-   with no override applied. Take every color from ONE mode — a light
-   background with dark-mode text (or vice versa) reads as broken.
+   **Theme mode:** extract the values for the mode the user chose. Dark values
+   usually live in an override block — `[data-theme="dark"]`, `.dark`,
+   `data-mode`, or `@media (prefers-color-scheme: dark)` — layered over the
+   `:root` defaults; "App default" means the plain `:root` values with no
+   override applied. Take every color from ONE mode — a light background with
+   dark-mode text (or vice versa) reads as broken.
 3. Identify the screen you're depicting from the component/route the article
    documents (you already read this code). Capture REAL labels: nav items, button
    text, field placeholders, status names.
@@ -48,7 +90,7 @@ Neutral default (ONLY when no tokens are found):
 bg `#ffffff`, surface `#f7f7f8`, text `#1a1a1e`, muted `#6b6e76`,
 border `#e5e5e9`, primary `#4f46e5`, radius 8/12px, font system sans.
 
-## Step B — Draw the SVG (house style)
+## Step B: Draw the SVG (house style)
 
 - Wrap the screen in app **window chrome** (a title/URL bar with three small dots)
   so it reads as a real screenshot.
@@ -69,7 +111,7 @@ border `#e5e5e9`, primary `#4f46e5`, radius 8/12px, font system sans.
   instructional shots where exact type matters, embed a subset font as a base64
   `@font-face` or convert text to `<path>` (heavier; off by default).
 
-## Step C — Fidelity by purpose
+## Step C: Fidelity by purpose
 
 - **Decorative / spotlight** (a top-of-article feature card setting the vibe):
   more abstract and brand-forward. Abstraction means showing LESS — crop to a
@@ -80,64 +122,77 @@ border `#e5e5e9`, primary `#4f46e5`, radius 8/12px, font system sans.
   near-screenshot — accurate layout, REAL labels, and the actual control the
   reader must act on.
 
-## Step D — Encode as a single-line data URI (the contract)
+## Step D: Check it, then upload it
 
-1. Write the finished SVG to a temp file with the **Write tool** (use a
-   `mktemp -d` dir or `/tmp`), e.g. `mockup.svg` — not a shell heredoc, since the
-   skill is granted `Write` but not `cat`. Keep ONE `<svg>` root with a `viewBox`.
-2. Encode and build the URI — base64, newlines stripped so it is ONE line:
+1. **Faithful:** every labeled element in the SVG (nav item, button, field,
+   heading, status) traces back to the template file you read. Delete any
+   element you cannot point to in the code, or, if that guts the drawing, drop
+   the mockup entirely.
+2. **Well-formed:** ONE `<svg>` root with a `viewBox`, valid XML (close every
+   tag, escape `&` as `&amp;` and `<` as `&lt;` in text). Keep it lean: a mockup
+   is usually 5-20 KB; the hard limit is 1 MB.
+3. **Look at it** (best-effort): if your environment can render SVG to PNG
+   (`rsvg-convert`, `cairosvg`, `qlmanage`, a headless browser), render it and
+   look at the result before uploading. Fix clipped or overflowing text.
+4. **Upload:** call `upload_image` with the SVG markup as plain text in `svg`,
+   plus exactly one target:
+   - `{ articleId, svg }` for an article or developer-docs page;
+   - `{ changelogEntryId, svg }` for a changelog entry.
 
-   ```bash
-   printf 'data:image/svg+xml;base64,%s' "$(base64 < mockup.svg | tr -d '\n')"
-   ```
+   The target must already exist. For a NEW article: create the draft first
+   (text only, no image lines), upload each mockup against the returned
+   `articleId`, then call `update_article` with the full Markdown including the
+   image URLs.
+5. **Read the result.** It returns `{ path, url, removed?, notice }`.
+   - `removed` lists anything the sanitizer stripped: scripts, event handlers,
+     `foreignObject`, external links or `url(…)`s. Only local `#fragment`
+     references and embedded `data:` images/fonts survive. If the drawing
+     relied on something removed, fix the SVG and upload again.
+   - `notice` is the reminder that the mockup is model-drawn. Relay it to the
+     user in your report.
+   - An error means the SVG was rejected (not well-formed, no `viewBox`, too
+     large). Fix it and retry, or leave the image out.
+6. **Fail-safe:** if you cannot get a clean upload, embed NO image rather than
+   a broken one, and say so in your report.
 
-   base64 (not raw utf8) avoids the `#`, `<`, `%` escaping traps and yields a URL
-   with NO whitespace — required, because the inline-image parser rejects
-   whitespace in the URL and a raw newline would truncate the `image:` line.
-3. Validate BEFORE embedding:
-   - **Faithful:** every labeled element in the SVG (nav item, button, field,
-     heading, status) traces back to the template file you read. Delete any
-     element you cannot point to in the code — or, if that guts the drawing,
-     drop the mockup entirely.
-   - **Size:** the data URI must be `< 50000` bytes
-     (`printf 'data:image/svg+xml;base64,%s' "$(base64 < mockup.svg | tr -d '\n')" | wc -c`).
-     If over, simplify the drawing.
-   - **Well-formed** (best-effort): `xmllint --noout mockup.svg` if available.
-   - **Renders** (best-effort): if `rsvg-convert` / `cairosvg` / `qlmanage` is
-     installed, render to PNG and eyeball it.
-4. **Fail-safe:** if validation fails, or no encoder is available, embed **NO**
-   image (omit the `image:` line / skip the `![]()`) rather than a broken URI, and
-   note it in your report.
+## Step E: Embed it
 
-## Step E — Embed it
-
-- Feature card — put the URI on the `image:` line of the ` ```feature ` block:
+- Feature card: put the returned `url` on the `image:` line of the
+  ` ```feature ` block:
 
   ````
   ```feature
   icon: layers
   eyebrow: Knowledge base
   title: The Article Editor
-  image: data:image/svg+xml;base64,PHN2ZyB4bWxu…   (one line, no spaces)
+  image: https://storage.googleapis.com/help-bento-public/companies/…/articles/…/….svg
 
   A distraction-free, block-based editor for writing help articles.
   ```
   ````
 
-- Inline instructional step — `![alt](data:…)` on its OWN line:
+- Inline instructional step: `![alt](url)` on its OWN line:
 
   ```
-  ![The article editor with the slash menu open](data:image/svg+xml;base64,PHN2…)
+  ![The article editor with the slash menu open](https://storage.googleapis.com/help-bento-public/…/….svg)
   ```
 
-Always write meaningful `alt` text — it is read by screen readers and shown if the
+Always write meaningful `alt` text: it is read by screen readers and shown if the
 image fails to load.
+
+## Report back
+
+For each mockup, tell the user which screen it shows, the fidelity used
+(decorative or instructional), and whether the style came from the repo's tokens
+or the neutral default. Remind them the mockups were drawn by the model, are only
+as good as that model, and should be checked against the real screens in the
+HelpBento editor before publishing.
 
 ## Worked example
 
-This SVG was drawn for THIS repo's article editor using its real tokens from
-`src/styles/_variables.scss` — brand violet `#8b5cf6`, warm-paper `#fafaf8`,
-hairline `#e2e2de`, 10–12px radii, Nunito. ~8 KB SVG → ~11 KB base64.
+This SVG was drawn for HelpBento's own article editor, using the real tokens
+from HelpBento's `src/styles/_variables.scss` — brand violet `#8b5cf6`, warm-paper `#fafaf8`,
+hairline `#e2e2de`, 10–12px radii, Nunito. ~8 KB of SVG.
 
 ```svg
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" font-family="Nunito, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">

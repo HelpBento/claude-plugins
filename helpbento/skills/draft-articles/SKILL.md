@@ -33,8 +33,6 @@ allowed-tools:
   - Bash(git:*)
   - Bash(base64:*)
   - Bash(tr:*)
-  - Bash(wc:*)
-  - Bash(xmllint:*)
   - Bash(rsvg-convert:*)
   - Bash(cairosvg:*)
   - Bash(qlmanage:*)
@@ -76,7 +74,7 @@ Code manages the OAuth tokens), so you never handle any credentials:
 - `mcp__plugin_helpbento_helpbento__update_article` — args `{ articleId, markdown, title?, excerpt?, tags?, categoryId? }`; works on any article (draft **or published**). ALL edits — body AND title/excerpt/tags/categoryId — land as a DRAFT and never publish: on a published article they are held in the draft and only go live when a human clicks Publish, so the public title and URL stay unchanged until then. `tags` are ids/names from `list_tags` (unknown tags are ignored). Returns `{ articleId, versionId, status, adminUrl, ignoredTags }`.
 - `mcp__plugin_helpbento_helpbento__create_category` — args `{ name, knowledgeBaseId?, description?, parentId? }`; creates a LIVE (but unpublished) category. Returns `{ categoryId, name, manageUrl }`.
 - `mcp__plugin_helpbento_helpbento__update_category` — args `{ categoryId, name?, description?, parentId? }`; renames/edits a category (a LIVE change). Returns `{ categoryId, manageUrl }`.
-- `mcp__plugin_helpbento_helpbento__upload_image` — args `{ articleId, contentType, dataBase64 }`; hosts a real screenshot/mockup and returns `{ path, url }` to embed. See **Uploading real images**.
+- `mcp__plugin_helpbento_helpbento__upload_image` — args `{ articleId, svg }` for a UI mockup you drew (SVG as plain text; sanitized server-side) or `{ articleId, contentType, dataBase64 }` for a real screenshot. Returns `{ path, url }` to embed (plus `removed` and `notice` for an SVG). See **Generating UI mockups** / **Uploading real images**.
 
 If a tool fails with an authentication error (e.g. the user hasn't connected
 yet, or their session expired), tell the user to run `/mcp`, choose **helpbento**,
@@ -93,11 +91,13 @@ anything:
    `aiAssistantEnabled` is false (that toggle gates the in-app editor
    assistant, not the company's voice).
 2. **Check mockup viability:**
-   - **Model floor:** drawing SVG UI mockups is only reliable on
+   - **Model floor:** mockups are SVGs you draw yourself, so they are only as
+     good as the model drawing them, and they are only reliable on
      Opus 4.8-or-stronger models. If you are a smaller/faster model (e.g. a
      Sonnet- or Haiku-class model), mockups are OFF for this run: skip the
      visuals and theme questions, write text-only articles, and tell the user
-     that mockups need a stronger model.
+     why: mockups are hand-drawn by the model, so they need an Opus-class
+     model (switch with `/model`) to come out well.
    - **Theme modes:** check whether the repo's design tokens define both a
      light and a dark mode — a second token block under `[data-theme=`,
      `.dark`, `data-mode`, or `prefers-color-scheme: dark`. Only when BOTH
@@ -107,7 +107,9 @@ anything:
    open — never a drip of separate asks. Skip any question the user's request
    already answered ("no images", "dark mockups", "keep it casual"), and skip
    the dialog entirely if nothing is open.
-   - **Visuals** — "Create UI mockup images for the article(s)?" Options:
+   - **Visuals** — "Create UI mockup images for the article(s)? They're SVGs
+     I draw from your code, not screenshots, so they're only as good as the
+     model you're running." Options:
      `Yes, where they help` (recommended — feature-card art on feature
      articles plus step illustrations where a how-to is clearer shown; every
      mockup is still subject to the faithfulness gate), `You decide per
@@ -170,6 +172,7 @@ anything:
 
 ## Step 4 — Write each article in Markdown
 
+<!-- mcp-guide:markdown:start -->
 - Author clear, task-oriented help content in GitHub-Flavored Markdown.
 - Do NOT start the body with a top-level `#` heading that repeats the title —
   HelpBento renders the title separately, so it would appear twice. Begin with
@@ -206,14 +209,13 @@ Write the Markdown on the left; it becomes the block on the right. Stick to thes
   swift, kotlin, markdown, docker, graphql`.
 - **Tables** — GFM tables (header row + `---` separator); the first row is the
   heading.
-- **Images** — `![alt](https://…)` on its own line. The URL can be: an
-  absolute external URL, a generated `data:image/svg+xml;base64,…` mockup (see
-  **Generating UI mockups**), or a URL returned by `upload_image` for a real
-  screenshot (see **Uploading real images**).
+- **Images** — `![alt](https://…)` on its own line. The URL can be an
+  absolute external URL or one returned by `upload_image` (a real screenshot,
+  or an SVG UI mockup you drew).
 - **Feature card** — a branded visual representation of an app feature (icon +
   label + title + blurb, with an optional screenshot in a window frame). Use a
-  fenced ` ```feature ` block. Only add one when the user confirmed it in Step 1,
-  and place it near the top of the article:
+  fenced ` ```feature ` block. Only on articles that document an app feature
+  (never conceptual, troubleshooting, or FAQ articles), placed near the top:
 
   ````
   ```feature
@@ -232,10 +234,8 @@ Write the Markdown on the left; it becomes the block on the right. Stick to thes
     use `none` for no icon.
   - `title:` the feature name (plain text). `eyebrow:` a short label above it
     (optional, plain text).
-  - `image:` an absolute screenshot/mockup URL, a generated
-    `data:image/svg+xml;base64,…` mockup, or a URL from `upload_image` for a
-    real screenshot (optional). By default you generate an SVG mockup — see
-    **Generating UI mockups** (or **Uploading real images** for a real one).
+  - `image:` an absolute image URL, or one returned by `upload_image` for an
+    SVG mockup you drew or a real screenshot (optional).
   - A blank line (or a `---` line) separates the metadata from the description
     blurb, which supports inline `**bold**` / `*italic*` / `` `code` `` /
     `[links](url)`.
@@ -246,14 +246,19 @@ Write the Markdown on the left; it becomes the block on the right. Stick to thes
   names fit the article — pass their names or ids. Never invent a tag: unknown
   values are dropped and returned in `ignoredTags`. If nothing fits, omit `tags`.
   Pass the Markdown directly as the `markdown` argument.
+<!-- mcp-guide:markdown:end -->
 
 ## Generating UI mockups
 
 Articles look far better with a visual. Because this skill runs inside each
-company's OWN codebase, you can DRAW a mockup of the relevant screen — styled from
-that repo's design tokens — and embed it inline as a `data:image/svg+xml` image.
-No screenshots, no hosting, no new dependencies. The full craft and the technical
-contract are in `references/mockups.md` — **read it before generating one.**
+company's OWN codebase, you can DRAW a mockup of the relevant screen as SVG,
+styled from that repo's design tokens, and host it with `upload_image`. The
+full craft, the upload flow, and the technical contract are in
+`references/mockups.md`: **read it before generating one.**
+
+**Mockups are only as good as the model drawing them.** They are hand-drawn by
+you, not screenshots. The user heard this at kickoff (Step 0); say it again in
+your report, and relay the `notice` that `upload_image` returns for every SVG.
 
 **The faithfulness gate — check BEFORE deciding to draw.** A mockup depicts a
 real screen of this app, so you may only draw one when ALL four are true:
@@ -280,10 +285,10 @@ gap with an invented control or label — leave it out.
 screens that pass the gate)
 - **Feature cards:** when an article carries a feature card (Step 1 / Step 4)
   and the feature's main screen passes the gate, draw a matching mockup and
-  put it on the card's `image:` line.
+  put its URL on the card's `image:` line.
 - **Instructional steps:** when a "how to do X" step is clearer shown, add an
-  inline `![alt](data:…)` mockup of that exact screen — the gate applies to
-  each screen you depict.
+  inline `![alt](url)` mockup of that exact screen — the gate applies to each
+  screen you depict.
 - Draw every mockup in the **theme chosen at Step 0** (`references/mockups.md`
   → Step A shows how to pull that mode's token values). Never mix modes across
   one run's mockups.
@@ -296,11 +301,19 @@ screens that pass the gate)
 **The non-negotiable contract** (details in `references/mockups.md` → Step D):
 - derive colors / type from the repo's design tokens (or use the neutral default
   and SAY so in your report);
-- one `<svg>` with a `viewBox`; embed as a SINGLE-LINE
-  `data:image/svg+xml;base64,…` built with `base64 < f.svg | tr -d '\n'`;
-- keep the data URI **under 50 KB**;
-- **fail-safe:** if you cannot validate the SVG, embed NO image rather than a
+- one `<svg>` with a `viewBox`, uploaded as plain text via
+  `upload_image { articleId, svg }`; the article must exist first, so for a
+  new article create the draft text-only, upload, then `update_article` with
+  the image URLs (Step 6);
+- if `upload_image` reports `removed` items the drawing relied on, fix and
+  re-upload;
+- **fail-safe:** if you cannot get a clean upload, embed NO image rather than a
   broken one.
+
+Before uploading, write the SVG to a temp file (`mktemp -d` + the **Write**
+tool) and, if `rsvg-convert` / `cairosvg` / `qlmanage` is installed, render it
+to PNG and **Read** the PNG to check it with your own eyes. Fix clipped or
+overflowing text before uploading.
 
 Report which mockups you generated, the fidelity used, and whether the style was
 derived from the repo or fell back to the default.
@@ -385,6 +398,10 @@ Pass both the chosen `knowledgeBaseId` and `categoryId` to `create_draft_article
 - For each article, call `create_draft_article` with `{ title, markdown, categoryId?, knowledgeBaseId?, excerpt?, tags? }`.
 - It returns `{ articleId, versionId, status, adminUrl }`. The status is always
   `draft`.
+- **With mockups:** create the draft with the text only (no `image:` line or
+  mockup images yet), upload each mockup with `upload_image { articleId, svg }`,
+  then call `update_article { articleId, markdown }` once with the full
+  Markdown including the returned URLs.
 
 ## Step 7 — Report back
 
@@ -392,6 +409,9 @@ Pass both the chosen `knowledgeBaseId` and `categoryId` to `create_draft_article
   returned `adminUrl` deep-link so the user can jump straight to the editor.
 - Remind the user these are DRAFTS — nothing is published until they review and
   publish each one in HelpBento. A human reviews before publish, always.
+- If you drew mockups, remind the user they are model-drawn approximations of
+  the real screens, only as good as the model that drew them, and worth
+  checking in the editor before publishing.
 
 ## Updating an existing article
 

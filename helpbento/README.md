@@ -47,6 +47,15 @@ creates the draft(s), and reports back a deep-link `adminUrl` for review:
 > Draft a changelog entry for this release from the latest git tag.
 ```
 
+### UI mockups
+
+Articles and changelog entries can carry **UI mockups**: SVG images of your app
+that Claude draws from your own templates and design tokens, then hosts in
+HelpBento. They're drawn by the model, not captured from the app, so **they're
+only as good as the model you're running**. They're switched on for Opus-class
+models only, and Claude asks before drawing any (you can always pick text-only).
+Check them against the real screens in the editor before publishing.
+
 ## Notes
 
 - **Never publishes or deletes.** Article / page / changelog-entry edits (new and
